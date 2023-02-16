@@ -5,14 +5,9 @@ import threading
 PORT = 23333
 HOST = '127.0.0.1'
 
-class ServerThread(threading.Thread):
-    def __init__(self, thread_id, conn, addr):
-        threading.Thread.__init__(self)
-        self.id = thread_id
-        self.conn = conn
-        self.addr = addr
 
-    def run(self):
+def serve(conn, addr):
+    with conn:
         while True:
             request = protocol.ClientMessage()
             try:
@@ -29,8 +24,6 @@ class ServerThread(threading.Thread):
             response.set_message("[[[[[[[[" + request.message + "]]]]]]]]")
             response.send_to_socket(conn)
 
-        print("Thread {} ends".format(self.id))
-
 
 if __name__ == "__main__":
     thread_id = 0
@@ -41,5 +34,5 @@ if __name__ == "__main__":
             conn, addr = s.accept()
             print('Connected by', addr)
             thread_id += 1
-            th = ServerThread(thread_id, conn, addr)
+            th = threading.Thread(target=serve, args=(conn, addr))
             th.start()
