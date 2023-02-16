@@ -2,6 +2,7 @@ import struct
 import socket
 
 MAX_OP = 32767
+MAX_STATUS = 32767
 USERNAME_LIMIT = 20
 MESSAGE_LIMIT = 500
 
@@ -21,10 +22,11 @@ def receive_n_bytes(s, n):
     return bin
 
 
-class ClientMessage:
+class Message:
     #  op, username, message must be set by the set methods to ensure validity. 
-    def __init__(self, op=0, username="", message=""):
+    def __init__(self, op=0, status=0, username="", message=""):
         self.set_op(op)
+        self.set_status(status)
         self.set_username(username)
         self.set_message(message)
     
@@ -32,6 +34,11 @@ class ClientMessage:
         if op < 0  or  op > MAX_OP:
             raise ValueError("operation code {} out of range [0, {}]".format(op, MAX_OP))
         self.op = op
+    
+    def set_status(self, status):
+        if status < 0  or  status > MAX_STATUS:
+            raise ValueError("Status code {} out of range [0, {}]".format(status, MAX_STATUS))
+        self.status = status
     
     def set_username(self, username):
         if len(username) > USERNAME_LIMIT:
@@ -47,6 +54,7 @@ class ClientMessage:
         """ Encode the object into a binary string
             Raise errors if the object cannot be encoded """
         binary = struct.pack('!H', self.op)
+        binary += struct.pack('!H', self.status)
         username_binary = self.username.encode("utf-8")
         binary += struct.pack('!H', len(username_binary))
         binary += username_binary
@@ -60,6 +68,8 @@ class ClientMessage:
             Raise errors if the binary string cannot be decoded """
         self.set_op( struct.unpack('!H', binary[:2])[0] )
         parsed = 2
+        self.set_status( struct.unpack('!H', binary[2:4])[0] )
+        parsed = 4 
         username_len = struct.unpack('!H', binary[parsed : parsed+2])[0]
         parsed += 2
         self.set_username( binary[parsed : parsed+username_len].decode("utf-8") )
@@ -88,12 +98,10 @@ class ClientMessage:
         self.decode_from(bin)
 
 
-ServerMessage = ClientMessage 
-
 
 ####################  The following codes are for testing only  #################### 
 def test():
-    obj = ClientMessage()
+    obj = Message()
     try:
         obj.set_op(MAX_OP + 1)
     except Exception as err:
@@ -107,13 +115,13 @@ def test():
     except Exception as err:
         print(err)
     
-    obj = ClientMessage(2, "user_name", "    this\tis\ta\message.")
+    obj = Message(2, 4, "user_name", "    this\tis\ta\message.")
 
     bin = obj.encode()
     print(bin)
-    aha = ClientMessage()
+    aha = Message()
     aha.decode_from(bin)
-    print(aha.op, aha.username, aha.message)
+    print(aha.op, aha.status, aha.username, aha.message)
 
     bin_2 = bin + b'extra text'
     try:
