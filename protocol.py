@@ -1,12 +1,10 @@
 import struct
 import socket
 
-MAX_OP = 32767
-MAX_STATUS = 32767
-USERNAME_LIMIT = 20
-MESSAGE_LIMIT = 500
+MAX_LENGTH = 20000
 
-BUFFER = 2      # a very small buffer for testing
+# BUFFER = 2      # a very small buffer for testing
+BUFFER = 4096     # a large buffer for the actual use      
 
 def receive_n_bytes(s, n):
     """ receives exactly n bytes from socket s
@@ -31,23 +29,15 @@ class Message:
         self.set_message(message)
     
     def set_op(self, op):
-        if op < 0  or  op > MAX_OP:
-            raise ValueError("operation code {} out of range [0, {}]".format(op, MAX_OP))
         self.op = op
     
     def set_status(self, status):
-        if status < 0  or  status > MAX_STATUS:
-            raise ValueError("Status code {} out of range [0, {}]".format(status, MAX_STATUS))
         self.status = status
     
     def set_username(self, username):
-        if len(username) > USERNAME_LIMIT:
-            raise ValueError("Username longer than {}.".format(USERNAME_LIMIT))
         self.username = username
     
     def set_message(self, message):
-        if len(message) > MESSAGE_LIMIT:
-            raise ValueError("Message longer than {}.".format(MESSAGE_LIMIT))
         self.message = message
 
     def encode(self):
@@ -85,55 +75,17 @@ class Message:
 
 
     def send_to_socket(self, s):
+        """ Raise error if sending fails """
         binary = self.encode()
         length = len(binary)
         to_send = struct.pack('!H', length) + binary
         s.sendall( to_send )
 
     def receive_from_socket(self, s):
-        """ Raise RuntimeError if socket connection broken """
+        """ Raise error if receiving fails """
         bin = receive_n_bytes(s, 2)
         length = struct.unpack('!H', bin)[0]
+        if length > MAX_LENGTH:
+            raise ValueError("Received message length {} is too long".format(length))
         bin = receive_n_bytes(s, length)
         self.decode_from(bin)
-
-
-
-####################  The following codes are for testing only  #################### 
-def test():
-    obj = Message()
-    try:
-        obj.set_op(MAX_OP + 1)
-    except Exception as err:
-        print(err)
-    try:
-        obj.set_username("asdafljsadlfkjas;dlfkjasdlkfjasldkfj")
-    except Exception as err:
-        print(err)
-    try:
-        obj.set_message("a" * MESSAGE_LIMIT + 'b')
-    except Exception as err:
-        print(err)
-    
-    obj = Message(2, 4, "user_name", "    this\tis\ta\message.")
-
-    bin = obj.encode()
-    print(bin)
-    aha = Message()
-    aha.decode_from(bin)
-    print(aha.op, aha.status, aha.username, aha.message)
-
-    bin_2 = bin + b'extra text'
-    try:
-        aha.decode_from(bin_2)
-    except Exception as err:
-        print(err)
-    
-    bin_3 = bin[0 : len(bin)-3]
-    try:
-        aha.decode_from(bin_3)
-    except Exception as err:
-        print(err)
-
-if __name__ == "__main__":
-    test()
