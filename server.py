@@ -1,5 +1,6 @@
 import socket
 import protocol
+
 import threading
 from serverFunction import *
 
@@ -26,7 +27,7 @@ def serve(conn, addr):
                 conn.close()
                 break
             
-            print("Received from client:", request.op, request.status, request.username)
+            print("Received from client:", request.op, request.status, request.username, request.target_name)
 
             if request.op not in DISPATCH:
                 response = protocol.Message()
