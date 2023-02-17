@@ -62,15 +62,12 @@ def list_account(request, shared_data):
     return response
 
 
-def send_message(conn, user, shared):
-    pass
-
 
 def delete_account(conn, user, shared):
     pass
 
 
-def logout(conn, user, shared):
+def send_message(conn, user, shared):
     pass
 
 
