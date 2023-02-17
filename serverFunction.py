@@ -83,6 +83,5 @@ DISPATCH = { CREATE_ACCOUNT: create_account,
              LIST_ACCOUNT: list_account,
              SEND_MESSAGE: send_message,
              DELETE_ACCOUNT: delete_account,
-             LOGOUT: logout,
              FETCH_MESSAGE: fetch_message
            }
