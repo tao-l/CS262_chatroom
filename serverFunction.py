@@ -1,24 +1,8 @@
 import protocol
 import fnmatch
-
-CREATE_ACCOUNT = 1
-LOGIN_ACCOUNT = 2
-LIST_ACCOUNT = 3
-SEND_MESSAGE = 4
-DELETE_ACCOUNT = 5
-LOGOUT = 6
-FETCH_MESSAGE = 7
+from protocol import *
 
 
-
-USERNAME_LIMIT = 20
-MESSAGE_LIMIT = 500
-MAX_USERS_TO_LIST = 100
-
-
-SUCCESS = 0
-INVALID_USERNAME = 2
-GENERAL_ERROR = 100
 
 
 def create_account(conn, request, current_user, shared_data):
