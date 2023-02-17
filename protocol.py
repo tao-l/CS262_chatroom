@@ -75,6 +75,7 @@ class ClientMessage:
 
 
     def send_to_socket(self, s):
+        """ Raise exception if """
         binary = self.encode()
         length = len(binary)
         to_send = struct.pack('!H', length) + binary

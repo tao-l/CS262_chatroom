@@ -39,23 +39,40 @@ if __name__ == "__main__":
     # get ip address and ports from command line 
     host_ip = sys.argv[1]
     host_port = sys.argv[2]
-    
-    # starting a client socket using TCP protocol
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.connect((host_ip, host_port))
-        except:
-            print("Error: Cannot connect to host {} port {}".format(host_ip, host_port))
-            sys.exit()
+  
+    # first while loop. If connection drops in the middle, user are required restart the session because there are no way for the server to tell the user is the same one as before. Such situations happen when the server is down or the network is down for a long time
+    # 1) client to server sendall fails
+    # 2) client does not hear server's confirmation response, or too long, or server crashes
+    while True:
+        
+        # starting a client socket using TCP protocol
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(300)
+            try:
+                s.connect((host_ip, host_port))
+            except:
+                print("Error: Cannot connect to host {} port {}, try again.".format(host_ip, host_port))
+                sys.exit()
 
-        while True:
-            menu_number = user_menu()
+            while True:
+                # get user input in command line
+                menu_number = user_menu()
 
-            # Further prompt users to input details for each function,
-            # Parse the input into command, and pass it to the socket
-            DISPATCH[menu_number](s)
-
-            getResponse(s, menu_number)
+                # Further prompt users to input details for each function,
+                # Parse the input into command, and pass it to the socket
+                # when sending fails, server or client crashes or are off line
+                # for too long
+                try:
+                    DISPATCH[menu_number](s)
+                except:
+                    print("Operation not successful, relog in and try again.")
+                    break # restarting socket, re log in and try again
             
-            if menu_number == EXIT_PROGRAM:
-                break
+                try:
+                    getResponse(s, menu_number)
+                except:
+                    pass
+                
+                if menu_number == EXIT_PROGRAM:
+                    sys.exit()
+
