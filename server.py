@@ -10,7 +10,7 @@ HOST = '127.0.0.1'
 
 class SharedData():
     def __init__(self):
-        self.accounts = ["example_username"]
+        self.accounts = []
         self.lock = threading.Lock()
 
 shared_data = SharedData()
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     thread_id = 0
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
-        s.listen(1)
+        s.listen(128)
         while True:
             conn, addr = s.accept()
             print('\nConnected by', addr)

@@ -19,7 +19,7 @@ NEXT_MESSAGE_EXIST = 2
  # error codes are from [100, 199]
 OPERATION_NOT_SUPPORTED = 100
 INVALID_USERNAME = 101
-ACCOUNT_NOT_EXIST =102
+ACCOUNT_NOT_EXIST = 102
 GENERAL_ERROR = 199
 
 
@@ -44,7 +44,18 @@ def receive_n_bytes(s, n):
 
 
 class Message:
-    #  op, username, message must be set by the set methods to ensure validity. 
+    """ Define a message object that can be sent and received via socket. 
+        This message object is used in both of the client's request and the server's response.
+        - It has 4 attributes:
+                op, status, username, target_name, message
+        - To send a message object [msg] to a socket, call the method:
+                msg.send_to_socket(s)
+          The object is encoded by the encode() function before sending. 
+        - To receive a message object [msg] from a socket, call the method:
+                msg = Message()
+                msg.receive_from_socket(s)
+          The object is obtained by decoding the binary string received from socket. 
+    """
     def __init__(self, op=0, status=0, username="", target_name="", message=""):
         self.set_op(op)
         self.set_status(status)
@@ -68,7 +79,7 @@ class Message:
         self.message = message
 
     def encode(self):
-        """ Encode the object into a binary string
+        """ Encode the message object into a binary string
             Raise errors if the object cannot be encoded """
         binary = struct.pack('!h', self.op)
 
@@ -89,7 +100,7 @@ class Message:
         return binary
     
     def decode_from(self, binary):
-        """ construct the objection from a binary string
+        """ construct the message object from a binary string
             Raise errors if the binary string cannot be decoded """
         self.set_op( struct.unpack('!h', binary[:2])[0] )
         parsed = 2

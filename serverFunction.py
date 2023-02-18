@@ -55,7 +55,7 @@ def list_account(request, shared_data):
             cnt += 1
             result += username + "\n"
             if cnt >= MAX_USERS_TO_LIST:
-                result += "...\nToo many users. Only list {} users.\n".format(MAX_USERS_TO_LIST)
+                result += f"...\nToo many users. Only list {MAX_USERS_TO_LIST} users.\n"
                 break 
     response = Message(request.op, SUCCESS)
     response.set_message(result)
@@ -78,7 +78,7 @@ def fetch_message(conn, user, shared):
 DISPATCH = { CREATE_ACCOUNT: create_account,
              CHECK_ACCOUNT: check_account,
              LIST_ACCOUNT: list_account,
-             SEND_MESSAGE: send_message,
              DELETE_ACCOUNT: delete_account,
+             SEND_MESSAGE: send_message,
              FETCH_MESSAGE: fetch_message
            }
