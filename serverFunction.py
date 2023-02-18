@@ -126,7 +126,7 @@ def send_message(request):
     """ Send a message from [request.username] to [request.target_name]
         - If [request.username] or [request.target_name] does not exist, return error
         - If message is too long, return error
-        - Otherwise, update shared_data.messages, return SUCESS
+        - Otherwise, update shared_data.messages, return SUCCESS
     """
     response = Message(request.op)
     username = request.username
@@ -166,10 +166,10 @@ def fetch_message(request):
             msg_id = request.status
         Server tries to return the (msg_id)-th message to the client:  
         - If the client's username does not exist, return error. 
-        - If msg_id < 1, return error
+        - If msg_id < 1, return error. 
         - If msg_id is larger than the number of messages the client received,
             return error MESSAGE_ID_TOO_LARGE
-        - Otherwise, return
+        - Otherwise, return: 
             * the message in [response.message]
             * the user who sent this message in [response.username]
             * and specify whether there are more messages to be fetched in [response.status]:
