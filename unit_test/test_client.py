@@ -9,6 +9,7 @@ from protocol import *
 HOST = '127.0.0.1'
 PORT = 23333
 
+
 #### helpful subroutines
 def create_an_account(username, show):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -73,6 +74,7 @@ def fetch_all(username):
             break
         msg_id += 1
 
+
 ##### Testing functions
 def test__create_list_check_delete__account():
     print("\n=================== BEGIN: testing create, list, check, delete =================")
@@ -90,7 +92,6 @@ def test__create_list_check_delete__account():
     print("Testing creating a lot of accounts simultaneously.")
 
     N = 110
-    
 
     threads = []
     for i in range(N):
@@ -174,7 +175,7 @@ def test__send_fetch__message():
     create_an_account("Alice", show=True)
     create_an_account("Bob", show=True)
 
-    print("\nBad sendins:")
+    print("\nBad sendings:")
     send_message("Alice", "no such user", "message", show=True)
     send_message("no such user", "Bob", "message", show=True)
     send_message("Alice", "Bob", "m"*(MESSAGE_LIMIT+1), show=True)
@@ -211,6 +212,7 @@ def test__send_fetch__message():
     fetch_all("Bob")
 
     print("\n=================== END: testing send, fetch messages ==================")
+
 
 if __name__ == "__main__":
 
