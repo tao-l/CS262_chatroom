@@ -166,8 +166,9 @@ def fetch_message(request):
             msg_id = request.status
         Server tries to return the (msg_id)-th message to the client:  
         - If the client's username does not exist, return Error. 
-        - If msg_id < 1 or is more than the number of messages the client received,
-            return Error
+        - If msg_id < 1, return error
+        - If msg_id is more than the number of messages the client received,
+            return error MESSAGE_ID_TOO_LARGE
         - Otherwise, return
             * the message in [response.message]
             * the user who sent this message in [response.username]
