@@ -8,13 +8,6 @@ PORT = 23333
 HOST = '127.0.0.1'
 
 
-class SharedData():
-    def __init__(self):
-        self.accounts = []
-        self.lock = threading.Lock()
-
-shared_data = SharedData()
-
 def serve(conn, addr):
     with conn:
         request = protocol.Message()
@@ -33,7 +26,7 @@ def serve(conn, addr):
             response.set_status(protocol.OPERATION_NOT_SUPPORTED)
             response.set_message(f"Operation {request.op} is not supported by the server.")
         else:
-            response = DISPATCH[request.op](request, shared_data)
+            response = DISPATCH[request.op](request)
 
         try:
             response.send_to_socket(conn)
