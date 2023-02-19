@@ -34,7 +34,7 @@ def create_account(request):
     if len(username) > USERNAME_LIMIT:
         response.set_status(INVALID_USERNAME)
         response.set_message("Username too long.")
-        return response
+        return [ response ]
     
     print("create_account: waiting for lock....")
     shared_data.lock.acquire()
@@ -43,19 +43,21 @@ def create_account(request):
         if username in shared_data.accounts:
             response.set_status(GENERAL_ERROR)
             response.set_message(f"User [{username}] already exists!  Pick a different username.")
+            print("    create_account: fail.")
         else:
-            # add the user to the account list
+            # Add the user to the account list.
             shared_data.accounts.append(username)
             # Initialize the user's message list to be empty.
             shared_data.messages[username] = []
 
             response.set_status(SUCCESS)
             response.set_message(f"Account [{username}] created successfully.  Please log in.")
+            print("    create_account: success.")
     finally:
         shared_data.lock.release()
         print("create_account: released lock.")
     
-    return response
+    return [ response ]
 
 
 def check_account(request):
@@ -69,7 +71,7 @@ def check_account(request):
     else:
         response.set_status(ACCOUNT_NOT_EXIST)
         response.set_message("Account does not exist.")
-    return response
+    return [ response ]
 
 
 def list_account(request):
@@ -78,23 +80,24 @@ def list_account(request):
           Because the message object has a length limit, only return MAX_USERS_TO_LIST accounts
           if there are too many such accounts.
     """
-    result = ""
+    response_list = []
     wildcard = request.message
-    cnt = 0
     for username in shared_data.accounts:
         if fnmatch.fnmatch(username, wildcard):
-            cnt += 1
-            result += username + "\n"
-            if cnt >= MAX_USERS_TO_LIST:
-                result += f"...\nToo many users. Only list {MAX_USERS_TO_LIST} users.\n"
-                break 
-    response = Message(request.op, SUCCESS)
-    response.set_message(result)
-    return response
+            response = Message(request.op, NEXT_ELEMENT_EXIST, username)
+            response_list.append(response)
+
+    if response_list == []:
+        response_list = [ Message(request.op, NO_ELEMENT, "", "", "No matched account.") ]
+    else:
+        # change the status code of the last resopnse to be NO_NEXT_ELEMENT
+        response_list[-1].set_status(NO_NEXT_ELEMENT)
+    
+    return response_list
 
 
 def delete_account(request):
-    """ Delete the account with [request.username]
+    """ Delete the account with [request.username].
         Return error message if the account does not exists.
         All the messages received by this account are discarded (including undelivered ones). 
     """
@@ -117,13 +120,13 @@ def delete_account(request):
             response.set_message(f"Account [{username}] deleted.  All received messages are discarded.")
     finally:
         shared_data.lock.release()
-        print("delete_account: released lock")
+        print("delete_account: released lock.")
     
-    return response
+    return [ response ]
 
 
 def send_message(request):
-    """ Send a message from [request.username] to [request.target_name]
+    """ Send a message from [request.username] to [request.target_name]: 
         - If [request.username] or [request.target_name] does not exist, return error
         - If message is too long, return error
         - Otherwise, update shared_data.messages, return SUCCESS
@@ -136,7 +139,7 @@ def send_message(request):
     if len(msg) > MESSAGE_LIMIT:
         request.set_status(MESSAGE_TOO_LONG)
         response.set_message(f"Message longer than {MESSAGE_LIMIT}, cannot be sent!")
-        return response
+        return [ response ]
 
     print("send_messgage: waiting for lock...")
     shared_data.lock.acquire()
@@ -157,59 +160,64 @@ def send_message(request):
         shared_data.lock.release()
         print("send_message: released lock. ")
     
-    return response
+    return [ response ]
 
 
 def fetch_message(request):
-    """ Client fetches a single message received by the user [request.username]. 
-        Which message to fecth is specified in [request.status]: 
-            msg_id = request.status
-        Server tries to return the (msg_id)-th message to the client:  
+    """ Client fetches message sent to the user [request.username].
+        Client specifies a [msg_id] in [request.status]: 
+        Server tries to return all the messages sent to the user starting from the (msg_id)-th one:   
         - If the client's username does not exist, return error. 
-        - If msg_id < 1, return error. 
-        - If msg_id is larger than the number of messages the client received,
-            return error MESSAGE_ID_TOO_LARGE
-        - Otherwise, return: 
+        - If [msg_id] < 1, return error. 
+        - If [msg_id] is larger than the number of messages the client received, return NO_ELEMENT
+        - Otherwise, return a stream of responses, where each response includes 
             * the message in [response.message]
             * the user who sent this message in [response.username]
-            * and specify whether there are more messages to be fetched in [response.status]:
-              - if there are, [response.status] = NEXT_MESSAGE_EXIST
-              - if not, [response.status] = NO_NEXT_MESSAGE
+            * and specify whether there are more responses in [response.status]:
+              - if there are, [response.status] = NEXT_ELEMENT_EXIST
+              - if not, [response.status] = NO_NEXT_ELEMENT
     """
-    response = Message(request.op)
     username = request.username
     msg_id = request.status
 
-    if (msg_id < 1):
-        response.set_status(GENERAL_ERROR)
+    if msg_id < 1:
+        response = Message(request.op, GENERAL_ERROR)
         response.set_message("Message id < 1")
-        return response
+        return [ response ]
     
     print("fetch_messgage: waiting for lock...")
     shared_data.lock.acquire()
     print("fetch_message: acquired lock. ")
     try:
         if username not in shared_data.accounts:
-            response.set_status(ACCOUNT_NOT_EXIST)
+            response = Message(request.op, ACCOUNT_NOT_EXIST)
             response.set_message(f"Your account [{username}] does not exist!")
-        else:
-            total_msg = len(shared_data.messages[username])
-            if msg_id > total_msg:
-                response.set_status(MESSAGE_ID_TOO_LARGE)
-                response.set_message(f"Message id {msg_id} > total number of messages {total_msg}")
+            response_list = [response]
+            return    # this return will go to the "finally" block, not ending the function. 
+        
+        total_msg = len(shared_data.messages[username])
+        if msg_id > total_msg:
+            response = Message(request.op, NO_ELEMENT)
+            response.set_message(f"Message id {msg_id} > total number of messages {total_msg}")
+            response_list = [response]
+            return    # this return will go to the "finally" block, not ending the function. 
+        
+        response_list = []
+        for i in range(msg_id-1, total_msg):
+            (from_which_user, message) = shared_data.messages[username][i]
+            response = Message(request.op)
+            response.set_username( from_which_user )
+            response.set_message( message )
+            if i == total_msg - 1:
+                response.set_status(NO_NEXT_ELEMENT)
             else:
-                (from_which_user, message) = shared_data.messages[username][msg_id - 1]
-                response.set_username( from_which_user )
-                response.set_message( message )
-                if msg_id < total_msg:
-                    response.set_status(NEXT_MESSAGE_EXIST)
-                else:
-                    response.set_status(NO_NEXT_MESSAGE)
+                response.set_status(NEXT_ELEMENT_EXIST)
+            response_list.append(response)
+                    
     finally:
         shared_data.lock.release()
         print("fetch_message: released lock. ")
-    
-    return response
+        return response_list
 
 
 DISPATCH = { CREATE_ACCOUNT: create_account,

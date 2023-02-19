@@ -25,12 +25,14 @@ def serve(conn, addr):
             response.set_op(request.op)
             response.set_status(protocol.OPERATION_NOT_SUPPORTED)
             response.set_message(f"Operation {request.op} is not supported by the server.")
+            response_list = [ response ]
         else:
-            response = DISPATCH[request.op](request)
+            response_list = DISPATCH[request.op](request)
 
         try:
-            response.send_to_socket(conn)
-            print("Response sent succesfully")
+            for response in response_list: 
+                response.send_to_socket(conn)
+            print("Responses sent succesfully")
         except Exception as err:
             print(err)
             conn.close()
