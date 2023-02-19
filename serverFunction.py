@@ -2,8 +2,6 @@ from protocol import *
 import fnmatch
 import threading
 
-MAX_USERS_TO_LIST = 100
-
 # A data structure shared by all server threads, including: 
 #    - a list of all existing accounts/users (identified by their usernames) 
 #    - a dictionary mapping users to the set of messages they received.
