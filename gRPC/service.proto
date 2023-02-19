@@ -1,0 +1,10 @@
+syntax = "proto3"; 
+
+package chatroom;
+
+service ChatRoom {
+    rpc rpc_create_account(Message) returns (Message) {}
+    rpc rpc_check_account(Message) returns (Message) {}
+    rpc rpc_list_account(Message) returns (stream User) {}
+
+}

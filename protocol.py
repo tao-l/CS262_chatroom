@@ -14,11 +14,13 @@ MESSAGE_LIMIT = 500
 
 
 SUCCESS = 0
-NO_NEXT_MESSAGE = 1
-NEXT_MESSAGE_EXIST = 2
 
+# status codes used when returning a stream of responses. 
+NO_ELEMENT = 1
+NO_NEXT_ELEMENT = 2
+NEXT_ELEMENT_EXIST = 3
 
- # error codes are from [100, 199]
+ # error codes: range in [100, 199]
 OPERATION_NOT_SUPPORTED = 100
 INVALID_USERNAME = 101
 ACCOUNT_NOT_EXIST = 102

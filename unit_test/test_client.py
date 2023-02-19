@@ -54,26 +54,30 @@ def fetch_message(username, msg_id, show):
         if show:
             print(f'Request to fetch message: [{username}], msg_id=[{msg_id}]')
         request.send_to_socket(s)
-        response = Message()
-        response.receive_from_socket(s)
-        if show:    
-            print("Response:  status =", response.status)
-            print("  ", response.username, ":", response.message)
-    return response
+        while True:
+            response = Message()
+            response.receive_from_socket(s)
+            if show:    
+                print("Response:  status =", response.status)
+                print("  ", response.username, ":", response.message)
+            if response.status != NEXT_ELEMENT_EXIST:
+                break
 
-def fetch_all(username):
-    print(f"Fetch all messages for [{username}]:")
-    msg_id = 1
-    while True:
-        response = fetch_message(username, msg_id, show=False)
-        if response.status == MESSAGE_ID_TOO_LARGE:
-            break
-        assert response.status in (NO_NEXT_MESSAGE, NEXT_MESSAGE_EXIST)
-        print("  ", response.username, ":", response.message)
-        if response.status == NO_NEXT_MESSAGE:
-            break
-        msg_id += 1
-
+def list_account(wildcard): 
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        request = Message(LIST_ACCOUNT)
+        request.set_message(wildcard)
+        request.send_to_socket(s)
+        while True:
+            response = Message()
+            response.receive_from_socket(s)
+            if response.status == NO_ELEMENT:
+                print(response.message)
+                break
+            print(response.username)
+            if response.status == NO_NEXT_ELEMENT:
+                break
 
 ##### Testing functions
 def test__create_list_check_delete__account():
@@ -89,10 +93,10 @@ def test__create_list_check_delete__account():
     
 
     print("\n----------------------------------")
-    print("Testing creating a lot of accounts simultaneously.")
 
     N = 110
-
+    
+    print(f"Testing creating a lot of accounts simultaneously: {N} accounts.")
     threads = []
     for i in range(N):
         username = f'user_{i}'
@@ -100,18 +104,9 @@ def test__create_list_check_delete__account():
         threads.append(th)
         th.start()
     
-
     print("\n----------------------------------")
     print("Testing listing accounts:")
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        request = Message(LIST_ACCOUNT)
-        request.set_message("user*")
-        request.send_to_socket(s)
-        response = Message()
-        response.receive_from_socket(s)
-        print("Accounts:")
-        print(response.message)
+    list_account("user*")
     
     for th in threads:
         th.join()
@@ -152,17 +147,17 @@ def test__create_list_check_delete__account():
         th_2.start()
     for th in threads:
         th.join()
+    print("Deletion done.\n")
     
     print("List the remaining accounts:")
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        request = Message(LIST_ACCOUNT)
-        request.set_message("*")
-        request.send_to_socket(s)
-        response = Message()
-        response.receive_from_socket(s)
-        print(response.message)
+    list_account("*")
+
     print("We should only see 10 accounts with name [user_XXX].   Good!")
+
+
+    print("\nList non-existing accounts:")
+    list_account("no such user")
+    print("We should see error message.  Good!")
 
 
     print("\n=================== END: testing create, list, check, delete =================\n")
@@ -208,15 +203,15 @@ def test__send_fetch__message():
 
 
     print("\nRe-creation of [Bob] should not affect [Alice]'s messages received from [Bob] previously:")
-    fetch_all("Alice")
-    fetch_all("Bob")
+    fetch_message("Alice", 1, show=True)
+    fetch_message("Bob",1, show=True)
 
     print("\n=================== END: testing send, fetch messages ==================")
 
 
 if __name__ == "__main__":
 
-    # test__create_list_check_delete__account()
+    test__create_list_check_delete__account()
 
     test__send_fetch__message()
 
