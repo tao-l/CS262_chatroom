@@ -33,7 +33,7 @@ You can start multiple clients.  You can of course also start clients on the ser
 Then, just play! 
 
 ## gRPC
-The above demonstration is for the socket implementation (which involves python program `server.py`, `client.py`, `serverFunction.py`, `clientFunction.py`, `protocol.py`).  To test the gRPC implementation, just cd into the gRPC folder 
+The above demonstration is for the socket implementation (which involves python programs `server.py`, `client.py`, `serverFunction.py`, `clientFunction.py`, `protocol.py`).  To test the gRPC implementation, just cd into the gRPC folder 
 ```console
 $ cd gRPC
 ```
