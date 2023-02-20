@@ -30,11 +30,13 @@ $ python3 client.py [IP_addr]
 ```
 You can start multiple clients.  You can of course also start clients on the server's machine. 
 
-Then, just play! 
+Then, just play!
+
+(To end the server or the client, press `control + c`.)
 
 ## gRPC
 The above demonstration is for the socket implementation (which involves python programs `server.py`, `client.py`, `serverFunction.py`, `clientFunction.py`, `protocol.py`).  To test the gRPC implementation, just cd into the gRPC folder 
 ```console
 $ cd gRPC
 ```
-and run the server and the client as before!  
+and run the server and the client as before!
