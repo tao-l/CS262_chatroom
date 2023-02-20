@@ -9,6 +9,7 @@ import socket
 import clientFunction
 from clientFunction import *
 
+HOST_PORT = 23333
 
 def user_menu():
     """
@@ -60,14 +61,13 @@ def handle_client_ui():
 
 
 if __name__ == "__main__":
-    if len(sys.argv)!=3:
-        print("ERROR: Please use python client.py <host ip> <port>.")
+    if len(sys.argv)!=2:
+        print("ERROR: Please use python client.py <host ip>. Port is fixed to 23333")
         sys.exit()
     
     # python client.py host_ip port_number
     # get ip address and ports from command line 
     host_ip = str(sys.argv[1])
-    host_port = int(sys.argv[2])
     
     login_just_success = False
     last_user_name = ''
@@ -86,9 +86,9 @@ if __name__ == "__main__":
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(300)
             try:
-                s.connect((host_ip, host_port))
+                s.connect((host_ip, HOST_PORT))
             except:
-                print("Error: Cannot connect to host {} port {}, try again.".format(host_ip, host_port))
+                print("Error: Cannot connect to host {} port {}, try again.".format(host_ip, HOST_PORT))
                 sys.exit()
 
             # Further prompt users to input details for each function,

@@ -38,11 +38,15 @@ def serve(conn, addr):
 
 
 if __name__ == "__main__":
-    mode = "local"
 
+    if len(sys.argv) > 2:
+        print("ERROR: Please use 'python server.py local' for running locally or 'python server.py' for network mode ")
+        sys.exit()
+
+    mode = "network"
     if len(sys.argv) == 2:
-        if sys.argv[1].lower() ==  "network":
-            mode = "network"
+        if sys.argv[1].lower() ==  "local":
+            mode = "local"
     
     if mode == "local":
         # Local mode:   set the HOST to be 127.0.0.1
