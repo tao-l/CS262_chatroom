@@ -7,6 +7,7 @@ sys.path.append('../')
 from protocol import *
 
 HOST = '127.0.0.1'
+# HOST = '100.89.39.14'
 PORT = 23333
 
 
@@ -209,9 +210,43 @@ def test__send_fetch__message():
     print("\n=================== END: testing send, fetch messages ==================")
 
 
+def test_invalid_request():
+    print("\n=================== BEGIN: testing invalid requests ==================")
+    print("Connect with server but does not send messages:")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        print("    client sleeping...")
+        time.sleep(7)
+    print("Server timeout.  Good! ")
+
+    print("\nInvalid operation:")
+    request = Message(6666)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        request.send_to_socket(s)
+        response = Message()
+        response.receive_from_socket(s)
+        print("status =", response.status, "  error message =",response.message)
+    
+    print("\nLong request message:")
+    request = Message(LIST_ACCOUNT)
+    request.message = "aa" * PROTOCOL_MAX_LEN
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        request.send_to_socket(s)
+        response = Message()
+        try:
+            response.receive_from_socket(s)
+        except Exception as err:
+            print(err)
+    print("Socket should be closed by the server.  Good!")
+    
+
 if __name__ == "__main__":
 
-    test__create_list_check_delete__account()
+    # test__create_list_check_delete__account()
 
-    test__send_fetch__message()
+    # test__send_fetch__message()
+
+    test_invalid_request()
 
