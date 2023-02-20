@@ -84,7 +84,7 @@ def list_account(request):
     wildcard = request.message
     for username in shared_data.accounts:
         if fnmatch.fnmatch(username, wildcard):
-            response = Message(request.op, NEXT_ELEMENT_EXIST, username)
+            response = Message(request.op, NEXT_ELEMENT_EXIST, username, message=username)
             response_list.append(response)
 
     if response_list == []:
@@ -92,7 +92,7 @@ def list_account(request):
     else:
         # change the status code of the last resopnse to be NO_NEXT_ELEMENT
         response_list[-1].set_status(NO_NEXT_ELEMENT)
-    
+
     return response_list
 
 

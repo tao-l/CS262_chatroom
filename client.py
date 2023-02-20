@@ -69,11 +69,18 @@ if __name__ == "__main__":
     host_ip = str(sys.argv[1])
     host_port = int(sys.argv[2])
     
-    # first while loop. If connection drops in the middle, user are required restart the session because there are no way for the server to tell the user is the same one as before. Such situations happen when the server is down or the network is down for a long time
-    # 1) client to server sendall fails
-    # 2) client does not hear server's confirmation response, or too long, or server crashes
+    login_just_success = False
+    last_user_name = ''
+
     while True:
-        menu_number = handle_client_ui() 
+        
+        # if the user newly login, automatically add a fetch message action
+        if login_just_success and menu_number == LOGIN_ACCOUNT_UI:
+            menu_number = FETCH_MESSAGE_UI
+            login_just_success = False
+            last_user_name = ''
+        else: # just respond to client's acion
+            menu_number = handle_client_ui() 
         
         # starting a client socket using TCP protocol
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -100,7 +107,10 @@ if __name__ == "__main__":
                 if proceed_to_response:
                 #if menu_number not in (FETCH_MESSAGE_UI, LOGOUT_UI):
                     get_response(s, menu_number)
+                    login_just_success =  last_user_name != clientFunction.myname
             except:
                 print("Receive command operation failed, relog in and try again.")
             finally:
                 s.close()
+            
+

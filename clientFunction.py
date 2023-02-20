@@ -54,19 +54,46 @@ def get_response(socket, menu_number):
      
     # parsing info
     # For every operation, regardless of success or failure, message already encoded
-    print(msg_obj.message)
+    if menu_number != FETCH_MESSAGE_UI:
+        print(msg_obj.message)
 
-    # handle post response operations
+    ###########################################################
+    # handle post response operations, customize return message
+    ###########################################################
+
     # login failure ---- account does not exist yet
+    # set back the myname to empty
     if menu_number == LOGIN_ACCOUNT_UI and msg_obj.status != SUCCESS:
         global myname
-        myname = ""
+        myname = "" 
+    # login success ---- fetch all previous messages
+    # have to reinitialize a socket outside because the server no longer listens
     elif menu_number == LOGIN_ACCOUNT_UI and msg_obj.status == SUCCESS:
         print("Login success for account {}.".format(myname))
+    # logging out account when successfully deleting
     elif menu_number == DELETE_ACCOUNT_UI and msg_obj.status == SUCCESS:
         print("Automatically logging out of account {}".format(myname))
         logout(socket)
-
+    # list account recursively receives all account msgs server sends
+    elif menu_number == LIST_ACCOUNT_UI:
+        #if msg_obj.status == NO_ELEMENT:
+        #    print("No accounts yet.")
+        if msg_obj.status == NEXT_ELEMENT_EXIST:
+            get_response(socket, menu_number)
+        elif msg_obj.status == NO_NEXT_ELEMENT:
+            print("All accounts names conforming with patterns listed.")
+    # fetch message recursively receives all account msgs server sends
+    elif menu_number == FETCH_MESSAGE_UI:
+        if msg_obj.status == NO_ELEMENT:
+            print("All messages fetched!")
+            return
+        print("{} : {}".format(msg_obj.username, msg_obj.message))
+        global mymsgcount
+        if msg_obj.status == NEXT_ELEMENT_EXIST:
+            mymsgcount += 1 
+            get_response(socket, menu_number)
+        elif msg_obj.status ==  NO_NEXT_ELEMENT:
+            mymsgcount += 1
 
 
 ####################################
@@ -134,21 +161,25 @@ def login_account(socket):
 def list_account(socket):
     """
     List account name with wildcard, only * is supported
+    return:
+        proceed to response true
     """
     msg = input("Input a username search pattern with alphabets, numeric and wildcard * >> ").strip()
-    while not msg.replace("*","").isalnum():
-        print("Username pattern contains illegal characters.")
+    while (not msg.replace("*","").isalnum() and msg != "*"):
+        print("Username pattern is illegal.")
         msg = input("Input a username search patter with alphabets, numeric and wildcard * >> ").strip()
 
     msg_obj = Message(op=LIST_ACCOUNT, message=msg)
     # throw exception in the next line if send error encountered
-    success = client_send_message(msg_obj, socket)
-    return success
+    client_send_message(msg_obj, socket)
+    return True
 
 
 def send_message(socket):
     """
     User send message to another user.
+    return:
+        proceed to response true
     """
     target_name = input("Specify a target name with alphabets and numeric of max length {} >> ".format(USERNAME_LIMIT)).strip()
     while not target_name.isalnum() or len(target_name)> USERNAME_LIMIT:
@@ -158,10 +189,11 @@ def send_message(socket):
     while len(msg) > MESSAGE_LIMIT:
         print("Message length longer than {}".format(MESSAGE_LIMIT))
         msg = input("Input your message of max length {} characters >> ".format(MESSAGE_LIMIT))
+    global myname
     msg_obj = Message(op=SEND_MESSAGE, username=myname, target_name=target_name, message=msg) 
     # throw exception in the next line if send error encountered
-    success = client_send_message(msg_obj, socket)
-    return success
+    client_send_message(msg_obj, socket)
+    return True
 
 def delete_account(socket):
     """
@@ -204,6 +236,12 @@ def fetch_message(socket):
         proceed to response: no need to listen to server's response
     """
     global mymsgcount
+    msg_obj = Message(FETCH_MESSAGE, mymsgcount, myname)
+    # throw exception in the next line if send error encountered
+    client_send_message(msg_obj, socket)
+    
+    return True
+    """ 
     while True: # keep fetching messages until the last one
         request = Message(FETCH_MESSAGE, mymsgcount, myname)
         # throw exception in the next line if send error encountered
@@ -218,6 +256,7 @@ def fetch_message(socket):
             break
         # else status is NEXT_MESSAGE_EXIST
     return False
+    """
 
 
 DISPATCH = { CREATE_ACCOUNT_UI: create_account,
