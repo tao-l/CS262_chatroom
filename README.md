@@ -35,8 +35,20 @@ Then, just play!
 (To end the server or the client, press `control + c`.)
 
 ## gRPC
-The above demonstration is for the socket implementation (which involves python programs `server.py`, `client.py`, `serverFunction.py`, `clientFunction.py`, `protocol.py`).  To test the gRPC implementation, just cd into the gRPC folder 
+The above demonstration is for the socket implementation (which involves python programs `server.py`, `client.py`, `serverFunction.py`, `clientFunction.py`, `protocol.py`). To test the gRPC implementation, just cd into the gRPC folder 
 ```console
 $ cd gRPC
 ```
+
+First install gRPC to python using command
+```console
+$ python -m pip install grpcio
+$ python -m pip install grpcio-tools
+```
+
+Then generate the grpc stub and skeleton code with commands
+```console
+$ python -m grpc_tools.protoc -I. --python_out=. --pyi_out=. --grpc_python_out=. service.proto
+```
+
 and run the server and the client as before!
