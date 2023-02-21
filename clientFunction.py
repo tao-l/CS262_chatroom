@@ -77,7 +77,7 @@ def get_response(socket, menu_number):
         if msg_obj.status == NO_ELEMENT:
             print_red("No accounts found.")
         elif msg_obj.status == NEXT_ELEMENT_EXIST:
-            print_cyan(msg_obj.username)
+            print_yellow(msg_obj.username)
             get_response(socket, menu_number)
         elif msg_obj.status == NO_NEXT_ELEMENT:
             print_cyan(msg_obj.username)

@@ -161,10 +161,10 @@ def fetch_message(stub):
         if chat_msgs.status in (NO_NEXT_ELEMENT, NEXT_ELEMENT_EXIST):
             print(chat_msgs.username+" : " + chat_msgs.message)
             mymsgcount += 1
-        elif chat_msgs.status == ACCOUNT_NOT_EXIST:
-            print(chat_msgs.message)
         elif chat_msgs.status == NO_ELEMENT:
             print("No new messages.")
+        else:
+            print("Error: " + chat_msgs.message)
         
     
 DISPATCH = { CREATE_ACCOUNT_UI: create_account,
