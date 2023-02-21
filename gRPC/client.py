@@ -89,14 +89,19 @@ def main():
             else: # just respond to client's acion
                 menu_number = handle_client_ui() 
             
-            DISPATCH[menu_number](stub)
-            #try:
-            #    DISPATCH[menu_number](stub)
-            #except:
-            #    print("command operation failed, relog in and try again.")
-            #    break
-        
-        
+            try:
+                DISPATCH[menu_number](stub)
+            except grpc.RpcError as e:
+                print(e.details())
+                status_code = e.code()
+                print(status_code.name)
+                print(status_code.value)
+                if grpc.StatusCode.INVALID_ARGUMENT == status_code:
+                    print("Invalid argument passed to gRPC. Modify code!")
+                elif grpc.StatusCode.UNAVAILABLE == status_code:
+                    print("Server down. Wait for the server to restart to try again.")
+                    sys.exist()
+                         
 if __name__ == "__main__":
     logging.basicConfig()
     main()

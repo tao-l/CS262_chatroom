@@ -53,6 +53,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 service_pb2.GeneralResponse  
         """
+        print("length of request create account", request.ByteSize())
         username = request.username
 
         if len(username) > USERNAME_LIMIT:
@@ -90,6 +91,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 service_pb2.GeneralResponse  
         """
+        print("length of request check account", request.ByteSize())
         response = pb2.GeneralResponse()
         if request.username in shared_data.accounts:
             response.status = SUCCESS
@@ -109,6 +111,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 users: a stream of service_pb2.User
         """
+        print("length of request list account", request.ByteSize())
         wildcard = request.wildcard
         for username in shared_data.accounts:
             if fnmatch.fnmatch(username, wildcard):
@@ -124,6 +127,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 service_pb2.GeneralResponse  
         """
+        print("length of request delete account", request.ByteSize())
         username = request.username
         response = pb2.GeneralResponse()
         
@@ -158,6 +162,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 service_pb2.GeneralResponse  
         """
+        print("length of request send message", request.ByteSize())
         response = pb2.GeneralResponse()
         username = request.username
         target_name = request.target_name
@@ -208,6 +213,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             Return:
                 chat messages: a stream of service_pb2.ChatMessage
         """
+        print("length of request fetch message", request.ByteSize())
         username = request.username
         msg_id = request.msg_id
         responses = [] 
