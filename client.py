@@ -1,7 +1,7 @@
 """
 CS 262 Distributed System
 Created on Feb 16, 2023
-Author: Gary Ma, Tao Lin
+Author: 
 """
 
 import sys

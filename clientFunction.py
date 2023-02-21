@@ -87,6 +87,9 @@ def get_response(socket, menu_number):
         if msg_obj.status == NO_ELEMENT:
             print("All messages fetched!")
             return
+        if msg_obj.status == ACCOUNT_NOT_EXIST:
+            print("Your account does not exist!")
+            return
         print("{} : {}".format(msg_obj.username, msg_obj.message))
         global mymsgcount
         if msg_obj.status == NEXT_ELEMENT_EXIST:
