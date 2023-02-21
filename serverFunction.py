@@ -82,7 +82,7 @@ def list_account(request):
     wildcard = request.message
     for username in shared_data.accounts:
         if fnmatch.fnmatch(username, wildcard):
-            response = Message(request.op, NEXT_ELEMENT_EXIST, username, message=username)
+            response = Message(request.op, NEXT_ELEMENT_EXIST, username)
             response_list.append(response)
 
     if response_list == []:
