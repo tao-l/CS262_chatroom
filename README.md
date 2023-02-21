@@ -41,7 +41,7 @@ $ python3 -m pip install --upgrade pip
 $ python3 -m pip install grpcio
 $ python3 -m pip install grpcio-tools
 ```
-(If you encounter problems when installing gRPC, check [their website](https://grpc.io/docs/languages/python/quickstart/))
+(If you encounter problems when installing gRPC, check [their website](https://grpc.io/docs/languages/python/quickstart/).)
 
 Then, just cd into the gRPC folder 
 ```console
