@@ -75,8 +75,6 @@ def check_account(request):
 def list_account(request):
     """ - List accounts that match with the wildcard in [request.message].
         - Return a list of those accounts in a single message object.
-          Because the message object has a length limit, only return MAX_USERS_TO_LIST accounts
-          if there are too many such accounts.
     """
     response_list = []
     wildcard = request.message
