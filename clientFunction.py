@@ -247,22 +247,6 @@ def fetch_message(socket):
     client_send_message(msg_obj, socket)
     
     return True
-    """ 
-    while True: # keep fetching messages until the last one
-        request = Message(FETCH_MESSAGE, mymsgcount, myname)
-        # throw exception in the next line if send error encountered
-        success = client_send_message(msg_obj, socket)
-        # receive from server how many more messages, throw exception in the next line if receive error encountered
-        response = client_receive_message(socket)
-        mymsgcount += 1
-        print("  ", response.username, ":", response.message)
-        
-        if response.status == NO_NEXT_MESSAGE:
-            print("Finished fetching all messages.")
-            break
-        # else status is NEXT_MESSAGE_EXIST
-    return False
-    """
 
 
 DISPATCH = { CREATE_ACCOUNT_UI: create_account,
