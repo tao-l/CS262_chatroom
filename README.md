@@ -35,7 +35,7 @@ Then, just play!
 (To end the server or the client, press `control + c`.)
 
 ## gRPC
-The above demonstration is for the socket implementation. To test the gRPC implementation, first ensure that you have installed the gRPC python packages; if you haven't, install it by command
+The above demonstration is for the socket implementation. To test the gRPC implementation, first ensure that you have installed the gRPC python package; if you haven't, install it by command
 ```console
 $ python3 -m pip install --upgrade pip
 $ python3 -m pip install grpcio
