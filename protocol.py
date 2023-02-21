@@ -149,12 +149,17 @@ class Message:
 
     def receive_from_socket(self, s):
         """ Raise error if receiving fails """
-        bin = receive_n_bytes(s, 2)
-        length = struct.unpack('!H', bin)[0]
+        binary = receive_n_bytes(s, 2)
+        length = struct.unpack('!H', binary)[0]
         if length > PROTOCOL_MAX_LEN:
             raise ValueError("Received message length {} is too long".format(length))
-        bin = receive_n_bytes(s, length)
-        self.decode_from(bin)
+        binary = receive_n_bytes(s, length)
+        self.decode_from(binary)
+    
+    def byte_length(self):
+        """ Compute the length of the binary message """
+        binary = self.encode()
+        return len(binary) + 2
 
 
 ####################### Testing code #####################

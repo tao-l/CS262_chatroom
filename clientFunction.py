@@ -1,8 +1,3 @@
-"""
-CS 262 Distributed System
-Created on Feb 16, 2023
-Author: Gary Ma, Tao Lin
-"""
 from protocol import *
 myname = "" # global variable for the client program to know who I am
 mymsgcount = 1 # global variable for the client 
@@ -46,54 +41,64 @@ def get_response(socket, menu_number):
 
     # If message receive failed, throws an error next line 
     msg_obj = client_receive_message(socket)
-    
-    # operation code has to be valid, else raise an error
-    if msg_obj.op not in DISPATCH:
-        print("Error: server returning operation {}, invalid!".format(msg_obj.op))
-        raise RuntimeError
      
     # parsing info
     # For every operation, regardless of success or failure, message already encoded
-    if menu_number != FETCH_MESSAGE_UI:
-        print(msg_obj.message)
+    
+    if menu_number not in {FETCH_MESSAGE_UI, LIST_ACCOUNT_UI}:
+        if msg_obj.status == SUCCESS:
+            print_green(msg_obj.message)
+        else:
+            print_red("Error: " + msg_obj.message)
 
     ###########################################################
     # handle post response operations, customize return message
     ###########################################################
 
-    # login failure ---- account does not exist yet
-    # set back the myname to empty
-    if menu_number == LOGIN_ACCOUNT_UI and msg_obj.status != SUCCESS:
-        global myname
-        myname = "" 
-    # login success ---- fetch all previous messages
-    # have to reinitialize a socket outside because the server no longer listens
-    elif menu_number == LOGIN_ACCOUNT_UI and msg_obj.status == SUCCESS:
-        print("Login success for account {}.".format(myname))
+    if menu_number == LOGIN_ACCOUNT_UI:
+        # login failure ---- account does not exist yet
+        # set back the myname to empty
+        if msg_obj.status != SUCCESS:
+            global myname
+            myname = ""
+        # login success ---- fetch all previous messages
+        # have to reinitialize a socket outside because the server no longer listens
+        elif msg_obj.status == SUCCESS:
+            print("Login success for account {}.".format(myname))
+
     # logging out account when successfully deleting
-    elif menu_number == DELETE_ACCOUNT_UI and msg_obj.status == SUCCESS:
-        print("Automatically logging out of account {}".format(myname))
-        logout(socket)
+    elif menu_number == DELETE_ACCOUNT_UI:
+        if msg_obj.status == SUCCESS:
+            print("Account {} deleted. Automatically logging out.".format(myname))
+            logout(socket)
+
     # list account recursively receives all account msgs server sends
     elif menu_number == LIST_ACCOUNT_UI:
-        #if msg_obj.status == NO_ELEMENT:
-        #    print("No accounts yet.")
-        if msg_obj.status == NEXT_ELEMENT_EXIST:
+        if msg_obj.status == NO_ELEMENT:
+            print_red("No accounts found.")
+        elif msg_obj.status == NEXT_ELEMENT_EXIST:
+            print_cyan(msg_obj.username)
             get_response(socket, menu_number)
         elif msg_obj.status == NO_NEXT_ELEMENT:
-            print("All accounts names conforming with patterns listed.")
+            print_cyan(msg_obj.username)
+            print("All accounts conforming with the pattern listed.")
+        else:
+            print_red("Error: " + msg_obj.message)
+
     # fetch message recursively receives all account msgs server sends
     elif menu_number == FETCH_MESSAGE_UI:
+        if msg_obj.status not in (NO_ELEMENT, NEXT_ELEMENT_EXIST, NO_NEXT_ELEMENT):
+            print_red("Error: " + msg_obj.message)
+            return 
         if msg_obj.status == NO_ELEMENT:
             print("All messages fetched!")
             return
-        print("{} : {}".format(msg_obj.username, msg_obj.message))
+        print_yellow("{} : {}".format(msg_obj.username, msg_obj.message))
         global mymsgcount
-        if msg_obj.status == NEXT_ELEMENT_EXIST:
-            mymsgcount += 1 
+        mymsgcount += 1 
+        if msg_obj.status == NEXT_ELEMENT_EXIST:            
             get_response(socket, menu_number)
-        elif msg_obj.status ==  NO_NEXT_ELEMENT:
-            mymsgcount += 1
+
 
 
 ####################################
@@ -120,9 +125,9 @@ def client_send_message(msg_obj, socket):
 
 def create_account(socket):
     """
-    User creating an account of alphabets and numeric of max length 12
+    User creating an account
     Return:
-        proceed to response true
+        proceed to response = true
     """
     name = input("Input a username with alphabets and numeric of max length {} >> ".format(USERNAME_LIMIT)).strip()
     while not name.isalnum() or len(name) > USERNAME_LIMIT:
@@ -140,8 +145,8 @@ def login_account(socket):
     It sends a request to server to verify if this account exists
     The server won't store the log in information
     This log in is only for the local program to store the global variable myname
-    return:
-        proceed to response true
+    Return:
+        proceed to response = true
     """
     name = input("Input a user name to log in >> ").strip()
     while not name.isalnum() or len(name)> USERNAME_LIMIT:
@@ -202,9 +207,9 @@ def delete_account(socket):
     return:
         proceed to response. If no need to delete account, return false
     """
-    msg = input("Are you sure to delete account {}(Y/N) >> ".format(myname))
+    msg = input("Are you sure to delete account {} (Y/N) >> ".format(myname))
     while msg not in ["Y","N"]:
-        msg = input("Are you sure to delete account {}(Y/N) >> ".format(myname))
+        msg = input("Are you sure to delete account {} (Y/N) >> ".format(myname))
 
     if msg == "N": return False
     msg_obj = Message(op=DELETE_ACCOUNT, username=myname)
@@ -233,7 +238,7 @@ def fetch_message(socket):
     When client/server crash, the counter mymsgcount restarts from 0 again. 
     fetch message handles message receives itself.
     return:
-        proceed to response: no need to listen to server's response
+        proceed to response: true
     """
     global mymsgcount
     msg_obj = Message(FETCH_MESSAGE, mymsgcount, myname)
@@ -268,3 +273,15 @@ DISPATCH = { CREATE_ACCOUNT_UI: create_account,
              FETCH_MESSAGE_UI: fetch_message}
 
 
+
+def print_red(text):
+    print('\033[0;31;40m' + text + '\033[0m')
+
+def print_green(text):
+    print('\033[0;32;40m' + text + '\033[0m')
+
+def print_cyan(text):
+    print('\033[0;34;40m' + text + '\033[0m')
+
+def print_yellow(text):
+    print('\033[0;33;40m' + text + '\033[0m')

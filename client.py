@@ -1,9 +1,3 @@
-"""
-CS 262 Distributed System
-Created on Feb 16, 2023
-Author: Gary Ma, Tao Lin
-"""
-
 import sys
 import socket
 import clientFunction
@@ -53,7 +47,7 @@ def handle_client_ui():
         print("Please log out to re login. ")
         menu_number = user_menu()
 
-    # If client exits, no longer needs to tell the server to log off
+    # If client exits, no need to log off
     if menu_number == EXIT_PROGRAM_UI:
         sys.exit()
 
@@ -65,8 +59,7 @@ if __name__ == "__main__":
         print("ERROR: Please use python client.py <host ip>. Port is fixed to 23333")
         sys.exit()
     
-    # python client.py host_ip port_number
-    # get ip address and ports from command line 
+    # get ip address from command line 
     host_ip = str(sys.argv[1])
     
     login_just_success = False
@@ -98,7 +91,7 @@ if __name__ == "__main__":
             try:
                 proceed_to_response = DISPATCH[menu_number](s)
             except:
-                print("Send command operation failed, relog in and try again.")
+                print("Send command operation failed, re-login and try again.")
                 proceed_to_response = False
                 s.close()
             

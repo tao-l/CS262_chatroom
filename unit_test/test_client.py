@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
     # test__create_list_check_delete__account()
 
-    # test__send_fetch__message()
+    test__send_fetch__message()
 
-    test_invalid_request()
+    # test_invalid_request()
 

@@ -17,7 +17,9 @@ def serve(conn, addr):
             conn.close()
             return
         
-        print("Received from client:", request.op, request.status, request.username, request.target_name)
+        print("Received from client:",
+              request.op, request.status, request.username, request.target_name)
+        print("   Request length =", request.byte_length())
 
         if request.op not in DISPATCH:
             response = protocol.Message()
@@ -31,6 +33,7 @@ def serve(conn, addr):
         try:
             for response in response_list: 
                 response.send_to_socket(conn)
+                print("   Response length =", response.byte_length())
             print("Responses sent succesfully to", addr)
         except Exception as err:
             print(err)
