@@ -99,8 +99,9 @@ def main():
                 if grpc.StatusCode.INVALID_ARGUMENT == status_code:
                     print("Invalid argument passed to gRPC. Modify code!")
                 elif grpc.StatusCode.UNAVAILABLE == status_code:
-                    print("Server down. Wait for the server to restart to try again.")
-                    sys.exist()
+                    print("Server down. Contact the server admin to restart.")
+                    return
+                    #sys.exit()
                          
 if __name__ == "__main__":
     logging.basicConfig()

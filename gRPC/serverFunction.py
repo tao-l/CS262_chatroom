@@ -79,6 +79,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             shared_data.lock.release()
             print("create_account: released lock.")
         
+        print("length of response create account", response.ByteSize())
         return response
 
 
@@ -99,6 +100,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
         else:
             response.status = ACCOUNT_NOT_EXIST
             response.message ="Account does not exist."
+        print("length of response check account", response.ByteSize())
         return response
 
 
@@ -116,6 +118,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
         for username in shared_data.accounts:
             if fnmatch.fnmatch(username, wildcard):
                 response = pb2.User(username=username)
+                print("length of response list account for one account", response.ByteSize())
                 yield response
     
 
@@ -149,6 +152,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             shared_data.lock.release()
             print("delete_account: released lock.")
         
+        print("length of response delete account", response.ByteSize())
         return response
 
 
@@ -171,6 +175,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
         if len(msg) > MESSAGE_LIMIT:
             request.status = MESSAGE_TOO_LONG
             response.message = f"Message longer than {MESSAGE_LIMIT}, cannot be sent!"
+            print("length of response send message", response.ByteSize())
             return response
 
         print("send_messgage: waiting for lock...")
@@ -192,6 +197,7 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
             shared_data.lock.release()
             print("send_message: released lock. ")
         
+        print("length of response send message", response.ByteSize())
         return response
 
 
@@ -257,5 +263,6 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
         
         assert len(responses) > 0
         for res in responses:
+            print("length of response fetch message for one message", res.ByteSize())
             yield res
 

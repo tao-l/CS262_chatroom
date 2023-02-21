@@ -32,6 +32,7 @@ def create_account(stub):
     user = pb2.User()
     user.username = name
     response = stub.rpc_create_account(user)
+    #print("length of response create account", response.ByteSize())
     print(response.message)
     return
 
