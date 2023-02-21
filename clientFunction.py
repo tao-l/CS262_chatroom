@@ -77,10 +77,10 @@ def get_response(socket, menu_number):
         if msg_obj.status == NO_ELEMENT:
             print_red("No accounts found.")
         elif msg_obj.status == NEXT_ELEMENT_EXIST:
-            print_yellow(msg_obj.username)
+            print_yellow("   " + msg_obj.username)
             get_response(socket, menu_number)
         elif msg_obj.status == NO_NEXT_ELEMENT:
-            print_cyan(msg_obj.username)
+            print_yellow("   " + msg_obj.username)
             print("All accounts conforming with the pattern listed.")
         else:
             print_red("Error: " + msg_obj.message)
@@ -91,9 +91,10 @@ def get_response(socket, menu_number):
             print_red("Error: " + msg_obj.message)
             return 
         if msg_obj.status == NO_ELEMENT:
-            print("All messages fetched!")
+            print("No new messages.")
             return
-        print_yellow("{} : {}".format(msg_obj.username, msg_obj.message))
+        print("Message:")
+        print_yellow("  {} : {}".format(msg_obj.username, msg_obj.message))
         global mymsgcount
         mymsgcount += 1 
         if msg_obj.status == NEXT_ELEMENT_EXIST:            
@@ -275,13 +276,13 @@ DISPATCH = { CREATE_ACCOUNT_UI: create_account,
 
 
 def print_red(text):
-    print('\033[0;31;40m' + text + '\033[0m')
+    print('\033[0;31m' + text + '\033[0m')
 
 def print_green(text):
-    print('\033[0;32;40m' + text + '\033[0m')
+    print('\033[0;32m' + text + '\033[0m')
 
 def print_cyan(text):
-    print('\033[0;34;40m' + text + '\033[0m')
+    print('\033[0;34m' + text + '\033[0m')
 
 def print_yellow(text):
-    print('\033[0;33;40m' + text + '\033[0m')
+    print('\033[0;33m' + text + '\033[0m')
