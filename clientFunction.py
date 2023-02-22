@@ -69,7 +69,7 @@ def get_response(socket, menu_number):
     # logging out account when successfully deleting
     elif menu_number == DELETE_ACCOUNT_UI:
         if msg_obj.status == SUCCESS:
-            print("Account {} deleted. Automatically logging out.".format(myname))
+            print("Account {} deleted.".format(myname))
             logout(socket)
 
     # list account recursively receives all account msgs server sends
@@ -172,7 +172,7 @@ def list_account(socket):
     """
     msg = input("Input a username search pattern with alphabets, numeric and wildcard * >> ").strip()
     while (not msg.replace("*","").isalnum() and msg != "*"):
-        print("Username pattern is illegal.")
+        print_red("Username pattern is illegal.")
         msg = input("Input a username search patter with alphabets, numeric and wildcard * >> ").strip()
 
     msg_obj = Message(op=LIST_ACCOUNT, message=msg)
@@ -229,7 +229,7 @@ def logout(socket):
     global mymsgcount
     myname = ""
     mymsgcount = 1
-    print("Log out successful.")
+    print("Logged out.")
     return False
 
 
