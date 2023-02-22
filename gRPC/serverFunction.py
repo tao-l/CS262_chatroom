@@ -239,24 +239,25 @@ class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
                 response.status = ACCOUNT_NOT_EXIST
                 response.message = f"Your account [{username}] does not exist!"
                 responses = [response]
-                                
-            total_msg = len(shared_data.messages[username])
-            if msg_id > total_msg:
-                response = pb2.ChatMessage()
-                response.status = NO_ELEMENT
-                response.message = f"Message id {msg_id} > total number of messages {total_msg}"
-                responses = [response]
-                
-            for i in range(msg_id-1, total_msg):
-                (from_which_user, message) = shared_data.messages[username][i]
-                response = pb2.ChatMessage()
-                response.message = message 
-                response.username = from_which_user
-                if i == total_msg - 1:
-                    response.status = NO_NEXT_ELEMENT
-                else:
-                    response.status = NEXT_ELEMENT_EXIST
-                responses.append(response)
+
+            else:                                
+                total_msg = len(shared_data.messages[username])
+                if msg_id > total_msg:
+                    response = pb2.ChatMessage()
+                    response.status = NO_ELEMENT
+                    response.message = f"Message id {msg_id} > total number of messages {total_msg}"
+                    responses = [response]
+                    
+                for i in range(msg_id-1, total_msg):
+                    (from_which_user, message) = shared_data.messages[username][i]
+                    response = pb2.ChatMessage()
+                    response.message = message 
+                    response.username = from_which_user
+                    if i == total_msg - 1:
+                        response.status = NO_NEXT_ELEMENT
+                    else:
+                        response.status = NEXT_ELEMENT_EXIST
+                    responses.append(response)
 
             shared_data.lock.release()
             print("fetch_message: released lock. ")
