@@ -1,8 +1,3 @@
-"""
-CS 262 Distributed System
-Created on Feb 16, 2023
-Author: 
-"""
 from serverFunction import *
 import service_pb2 as pb2
 import service_pb2_grpc
@@ -22,7 +17,7 @@ EXIT_PROGRAM_UI = 8
 
 def create_account(stub):
     """
-    User creating an account of alphabets and numeric of max length 12
+    User creating an account
     """
     name = input("Input a username with alphabets and numeric of max length {} >> ".format(USERNAME_LIMIT)).strip()
     while not name.isalnum() or len(name) > USERNAME_LIMIT:
@@ -33,7 +28,10 @@ def create_account(stub):
     user.username = name
     response = stub.rpc_create_account(user)
     #print("length of response create account", response.ByteSize())
-    print(response.message)
+    if response.status == SUCCESS:
+        print_green(response.message)
+    else:
+        print_red("Error: " + response.message)
     return
 
 def login_account(stub):
@@ -55,17 +53,15 @@ def login_account(stub):
     if response.status == SUCCESS:
         global myname
         myname = name
-        print("Login success for account {}.".format(myname))
+        print_green("Login success for account {}.".format(myname))
         fetch_message(stub)
     elif response.status == ACCOUNT_NOT_EXIST:
-        print("Account does not exist.")
+        print_red("Account does not exist.")
 
 
 def list_account(stub):
     """
     List account name with wildcard, only * is supported
-    return:
-        proceed to response true
     """
     msg = input("Input a username search pattern with alphabets, numeric and wildcard * >> ").strip()
     while (not msg.replace("*","").isalnum() and msg != "*"):
@@ -77,19 +73,17 @@ def list_account(stub):
     response_len = 0
     for user in stub.rpc_list_account(wildcard):
         response_len += 1
-        print(user.username)
+        print_yellow("   " + user.username)
 
     if not response_len:
-        print("No accounts conforming with pattern "+msg)
+        print("No accounts found.")
     else:
-        print("All accounts names conforming with patterns listed.")
+        print("All accounts conforming with the pattern listed.")
 
 
 def send_message(stub):
     """
     User send message to another user.
-    return:
-        proceed to response true
     """
     target_name = input("Specify a target name with alphabets and numeric of max length {} >> ".format(USERNAME_LIMIT)).strip()
     while not target_name.isalnum() or len(target_name)> USERNAME_LIMIT:
@@ -105,29 +99,32 @@ def send_message(stub):
     chat_msg.target_name = target_name
     chat_msg.message = msg
     response = stub.rpc_send_message(chat_msg)
-    print(response.message)
+    if response.status == SUCCESS:
+        print_green(response.message)
+    else:
+        print_red("Error: " + response.message)
     
 
 def delete_account(stub):
     """
     A logged in user delete its account
     This automatically logs out a user
-    return:
-        proceed to response. If no need to delete account, return false
     """
-    msg = input("Are you sure to delete account {}(Y/N) >> ".format(myname))
+    msg = input("Are you sure to delete account {} (Y/N) >> ".format(myname))
     while msg not in ["Y","N"]:
-        msg = input("Are you sure to delete account {}(Y/N) >> ".format(myname))
+        msg = input("Are you sure to delete account {} (Y/N) >> ".format(myname))
 
     if msg == "N": return
 
     user = pb2.User()
     user.username = myname
     response = stub.rpc_delete_account(user)
-    print(response.message)
+    # print(response.message)
     if response.status == SUCCESS:
-        print("Automatically logging out of account {}".format(myname))
+        print_green("Account {} deleted.".format(myname))
         logout(stub)
+    else:
+        print_red("Error: " + response.message)
 
 
 def logout(stub):
@@ -141,8 +138,7 @@ def logout(stub):
     global mymsgcount
     myname = ""
     mymsgcount = 1
-    print("Log out successful.")
-    return False
+    print("Logged out.")
 
 
 def fetch_message(stub):
@@ -159,12 +155,13 @@ def fetch_message(stub):
     fetch_request.username = myname
     for chat_msgs in stub.rpc_fetch_message(fetch_request):
         if chat_msgs.status in (NO_NEXT_ELEMENT, NEXT_ELEMENT_EXIST):
-            print(chat_msgs.username+" : " + chat_msgs.message)
+            print("Message:")
+            print_yellow("  " + chat_msgs.username + " : " + chat_msgs.message)
             mymsgcount += 1
         elif chat_msgs.status == NO_ELEMENT:
             print("No new messages.")
         else:
-            print("Error: " + chat_msgs.message)
+            print_red("Error: " + chat_msgs.message)
         
     
 DISPATCH = { CREATE_ACCOUNT_UI: create_account,
@@ -176,3 +173,14 @@ DISPATCH = { CREATE_ACCOUNT_UI: create_account,
              FETCH_MESSAGE_UI: fetch_message}
 
 
+def print_red(text):
+    print('\033[0;31m' + text + '\033[0m')
+
+def print_green(text):
+    print('\033[0;32m' + text + '\033[0m')
+
+def print_cyan(text):
+    print('\033[0;34m' + text + '\033[0m')
+
+def print_yellow(text):
+    print('\033[0;33m' + text + '\033[0m')
