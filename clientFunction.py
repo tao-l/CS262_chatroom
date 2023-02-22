@@ -77,10 +77,10 @@ def get_response(socket, menu_number):
         if msg_obj.status == NO_ELEMENT:
             print_red("No accounts found.")
         elif msg_obj.status == NEXT_ELEMENT_EXIST:
-            print_cyan(msg_obj.username)
+            print_yellow("   " + msg_obj.username)
             get_response(socket, menu_number)
         elif msg_obj.status == NO_NEXT_ELEMENT:
-            print_cyan(msg_obj.username)
+            print_yellow("   " + msg_obj.username)
             print("All accounts conforming with the pattern listed.")
         else:
             print_red("Error: " + msg_obj.message)
@@ -91,9 +91,10 @@ def get_response(socket, menu_number):
             print_red("Error: " + msg_obj.message)
             return 
         if msg_obj.status == NO_ELEMENT:
-            print("All messages fetched!")
+            print("No new messages.")
             return
-        print_yellow("{} : {}".format(msg_obj.username, msg_obj.message))
+        print("Message:")
+        print_yellow("  {} : {}".format(msg_obj.username, msg_obj.message))
         global mymsgcount
         mymsgcount += 1 
         if msg_obj.status == NEXT_ELEMENT_EXIST:            
@@ -246,22 +247,6 @@ def fetch_message(socket):
     client_send_message(msg_obj, socket)
     
     return True
-    """ 
-    while True: # keep fetching messages until the last one
-        request = Message(FETCH_MESSAGE, mymsgcount, myname)
-        # throw exception in the next line if send error encountered
-        success = client_send_message(msg_obj, socket)
-        # receive from server how many more messages, throw exception in the next line if receive error encountered
-        response = client_receive_message(socket)
-        mymsgcount += 1
-        print("  ", response.username, ":", response.message)
-        
-        if response.status == NO_NEXT_MESSAGE:
-            print("Finished fetching all messages.")
-            break
-        # else status is NEXT_MESSAGE_EXIST
-    return False
-    """
 
 
 DISPATCH = { CREATE_ACCOUNT_UI: create_account,
@@ -275,13 +260,13 @@ DISPATCH = { CREATE_ACCOUNT_UI: create_account,
 
 
 def print_red(text):
-    print('\033[0;31;40m' + text + '\033[0m')
+    print('\033[0;31m' + text + '\033[0m')
 
 def print_green(text):
-    print('\033[0;32;40m' + text + '\033[0m')
+    print('\033[0;32m' + text + '\033[0m')
 
 def print_cyan(text):
-    print('\033[0;34;40m' + text + '\033[0m')
+    print('\033[0;34m' + text + '\033[0m')
 
 def print_yellow(text):
-    print('\033[0;33;40m' + text + '\033[0m')
+    print('\033[0;33m' + text + '\033[0m')

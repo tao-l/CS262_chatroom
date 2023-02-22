@@ -41,8 +41,8 @@ shared_data = SharedData()
 
 class ChatRoomServicer(service_pb2_grpc.ChatRoomServicer):
 #  The followings are the server's functions.
-#  Each function takes a request (a messsage object defined in protocol.py) as input,
-#  and returns a response (also a message ojbect)
+#  Each function takes a request (a pb2 bject) as input,
+#  and returns a response (also a pb2 ojbect)
 
     def rpc_create_account(self, request, context):
         """ Create account with username [request.username].

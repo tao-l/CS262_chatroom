@@ -11,7 +11,8 @@ def user_menu():
     It will keep prompting user for function number until a valid one
     """
     print('''
-        {} CONNECTED TO MESSAGE SERVER - type the number of a function:
+    Current user: {}\n 
+        Type the number of a function:
         (1) Create Account
         (2) Login to Account
         (3) List Accounts

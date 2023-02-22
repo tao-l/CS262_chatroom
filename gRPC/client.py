@@ -2,6 +2,7 @@ import logging
 import sys
 import grpc
 import service_pb2 as pb2
+import service_pb2_grpc
 import clientFunction
 from clientFunction import *
 
@@ -13,7 +14,8 @@ def user_menu():
     It will keep prompting user for function number until a valid one
     """
     print('''
-        {} CONNECTED TO MESSAGE SERVER - type the number of a function:
+    Current user: {} \n
+        Type the number of a function:
         (1) Create Account
         (2) Login to Account
         (3) List Accounts
@@ -67,41 +69,29 @@ def main():
     # get ip address and ports from command line 
     host_ip = str(sys.argv[1])
 
+    try:
+        channel = grpc.insecure_channel(host_ip+':'+HOST_PORT)
+        stub = service_pb2_grpc.ChatRoomStub(channel)
+    except:
+        print("Error: Cannot connect to host {} port {}, try again.".format(host_ip, HOST_PORT))
+        sys.exit()
+
+    while True: 
+        menu_number = handle_client_ui() 
         
-    login_just_success = False
-    last_user_name = ''
-
-    while True:
-
         try:
-            channel = grpc.insecure_channel(host_ip+':'+HOST_PORT)
-            stub = service_pb2_grpc.ChatRoomStub(channel)
-        except:
-            print("Error: Cannot connect to host {} port {}, try again.".format(host_ip, HOST_PORT))
-            sys.exit()
-
-        while True: 
-            # if the user newly login, automatically add a fetch message action
-            if login_just_success and menu_number == LOGIN_ACCOUNT_UI:
-                menu_number = FETCH_MESSAGE_UI
-                login_just_success = False
-                last_user_name = ''
-            else: # just respond to client's acion
-                menu_number = handle_client_ui() 
-            
-            try:
-                DISPATCH[menu_number](stub)
-            except grpc.RpcError as e:
-                print(e.details())
-                status_code = e.code()
-                print(status_code.name)
-                print(status_code.value)
-                if grpc.StatusCode.INVALID_ARGUMENT == status_code:
-                    print("Invalid argument passed to gRPC. Modify code!")
-                elif grpc.StatusCode.UNAVAILABLE == status_code:
-                    print("Server down. Contact the server admin to restart.")
-                    return
-                    #sys.exit()
+            DISPATCH[menu_number](stub)
+        except grpc.RpcError as e:
+            print(e.details())
+            status_code = e.code()
+            print(status_code.name)
+            print(status_code.value)
+            if grpc.StatusCode.INVALID_ARGUMENT == status_code:
+                print("Invalid argument passed to gRPC. Modify code!")
+            elif grpc.StatusCode.UNAVAILABLE == status_code:
+                print("Server down. Contact the server admin to restart.")
+                return
+                #sys.exit()
                          
 if __name__ == "__main__":
     logging.basicConfig()
